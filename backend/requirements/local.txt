@@ -1,0 +1,11 @@
+# Local development dependencies go here
+-r tests.txt
+
+# WSGI utility library for Python
+Werkzeug==0.15.3
+
+# Collection of useful extensions
+django-extensions==2.2.1
+
+# Wery useful toolbar for debuging project
+django-debug-toolbar==1.11

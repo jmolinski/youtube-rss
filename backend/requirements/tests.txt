@@ -1,0 +1,32 @@
+# Base dependencies go here
+-r base.txt
+
+# Code coverage
+coverage==4.5.4
+
+# best testing framework
+pytest>=3.6.0
+
+# pytest plugin produces coverage reports
+pytest-cov>=2.5.1
+
+# testing django with pytest
+pytest-django>=3.2.1
+
+# changes the default look test results
+pytest-sugar==0.9.1
+
+# app for create functional testing
+django-webtest>=1.9.3
+
+# # very useful toolbar for debuging project
+django-debug-toolbar==1.11
+
+# code audit tool
+isort==4.3.4
+pylama==7.6.6
+pylama-pylint==3.1.1
+pylint-django==2.0.4
+mypy==0.720
+mypy-extensions==0.4.1
+django-stubs==1.0.2

@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:11.1
+    volumes:
+      - ./shared/postgresql:/var/lib/postgresql/data
+    env_file:
+      - .envs/.local/.postgres
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+  app:  &app
+    container_name: youtube-rss-app
+    build:
+      context: .
+      dockerfile: ./docker/local/backend/Dockerfile
+    ports:
+      - "6789:8000"
+    depends_on:
+      - db
+    env_file:
+      - .envs/.local/.django
+      - .envs/.local/.postgres
+    volumes:
+      - ./backend:/app
+      - ./shared/media:/app/shared/media
+      - ./shared/static:/app/shared/static
+      - ./shared/templates:/app/shared/templates
+    restart: on-failure
