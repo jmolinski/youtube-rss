@@ -35,6 +35,8 @@ def update_local(request):
             "--get-id",
             "--playlist-items",
             "1-" + str(settings.KEEP_LAST_N),
+            "--skip-download",
+            "--flat-playlist",
             r"https://www.youtube.com/channel/UCH1w8bpxhzR2ACjPE__PEkw/",
         ],
         capture_output=True,
