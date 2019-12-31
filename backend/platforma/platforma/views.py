@@ -41,7 +41,7 @@ def update_local(request):
     )
     ids = [i for i in get_ids_process.stdout.decode("utf-8").split("\n") if len(i) > 3]
 
-    pool = multiprocessing.Pool(processes=5)
+    pool = multiprocessing.Pool(processes=1)
     print(pool.map(download_video, ids))
 
     return HttpResponse("OK")
