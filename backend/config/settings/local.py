@@ -73,4 +73,4 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Your local stuff: Below this line define 3rd party library settings
 # ------------------------------------------------------------------------------
 
-PASSCODE = env("PASSCODE", default="default")
+KEEP_LAST_N = env.int("KEEP_LAST_N", 5)

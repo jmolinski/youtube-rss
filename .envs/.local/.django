@@ -12,3 +12,5 @@ DJANGO_SETTINGS_MODULE=config.settings.local
 DJANGO_SETTINGS_MODULE_TEST=config.settings.test
 DJANGO_SECRET_KEY=9+;JKVi1dF$:cf+4Vf@(VUJUTqr6(m!0E=#8`+o7SBm]RP!V;c
 PYTHONPATH=:/app
+
+KEEP_LAST_N=2

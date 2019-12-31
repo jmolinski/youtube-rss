@@ -27,6 +27,9 @@ RUN sed -i 's/\r//' /start.sh \
     && chmod +x /start.sh
 
 
+RUN usermod -u 1000 django
+RUN usermod -G staff django
+
 COPY ./shared/ /app/shared/
 COPY ./backend /app
 RUN chown -R django /app

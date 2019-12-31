@@ -2,10 +2,10 @@
 # Wheel 0.25+ needed to install certain packages on CPython 3.5+ like Pillow and psycopg2
 # See http://bitly.com/wheel-building-fails-CPython-35
 # Verified bug on Python 3.5.1
-wheel==0.31.1
+wheel==0.33.5
 
 # Django
-django==2.2.8
+django==2.2.9
 
 # HTTP for Humans
 requests~=2.21
@@ -20,7 +20,7 @@ django-model-utils==3.1.2
 argon2-cffi==18.1.0
 
 # Python-PostgreSQL Database Adapter
-psycopg2-binary==2.7.4
+psycopg2-binary==2.8.4
 
 # Time zones support
 pytz==2018.4
