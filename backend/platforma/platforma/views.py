@@ -39,20 +39,37 @@ def update_local(request):
         ],
         capture_output=True,
     )
-    ids = [i for i in get_ids_process.stdout.decode("utf-8").split("\n") if len(i) > 3]
-    pool = multiprocessing.Pool(processes=1)
-    print(pool.map(download_video, ids))
+    ids_to_download = {
+        i for i in get_ids_process.stdout.decode("utf-8").split("\n") if len(i) > 3
+    }
+    already_downloaded = {x["id"] for x in map(get_file_data, get_saved_ids())}
+
+    to_skip = ids_to_download & already_downloaded
+    ids_to_download = ids_to_download - already_downloaded
+
+    print("Skipping already downloaded ids:", to_skip)
+
+    if len(ids_to_download) > 5:
+        print("Capping full list to download [", ids_to_download, "] to [", end=" ")
+        ids_to_download = set(list(ids_to_download)[:5])
+        print(ids_to_download, "] to not git 429 too many requests")
+
+    if ids_to_download:
+        pool = multiprocessing.Pool(processes=2)
+        print(pool.map(download_video, list(ids_to_download)))
 
     ######### clear old files
 
     saved_videos = list(map(get_file_data, get_saved_ids()))
     if len(saved_videos) > settings.REMOVE_THRESHOLD_N:
-        saved_videos.sort(key=lambda x: x['sortby'])
+        saved_videos.sort(key=lambda x: x["sortby"])
         vid = saved_videos[0]  # to_delete
 
-        vid_path = os.path.join('/app/shared/media/', vid['media_url'].split('media/')[1])
-        metadata_path = os.path.join('/app/shared/media/', vid['id'] + '.info.json')
-        print('Removing:', vid_path, metadata_path)
+        vid_path = os.path.join(
+            "/app/shared/media/", vid["media_url"].split("media/")[1]
+        )
+        metadata_path = os.path.join("/app/shared/media/", vid["id"] + ".info.json")
+        print("Removing:", vid_path, metadata_path)
 
         os.remove(vid_path)
         os.remove(metadata_path)
