@@ -74,3 +74,4 @@ CORS_ORIGIN_ALLOW_ALL = True
 # ------------------------------------------------------------------------------
 
 KEEP_LAST_N = env.int("KEEP_LAST_N", 5)
+REMOVE_THRESHOLD_N = env.int("REMOVE_THRESHOLD_N", 5)

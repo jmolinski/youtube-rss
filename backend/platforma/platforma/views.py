@@ -40,9 +40,22 @@ def update_local(request):
         capture_output=True,
     )
     ids = [i for i in get_ids_process.stdout.decode("utf-8").split("\n") if len(i) > 3]
-
     pool = multiprocessing.Pool(processes=1)
     print(pool.map(download_video, ids))
+
+    ######### clear old files
+
+    saved_videos = list(map(get_file_data, get_saved_ids()))
+    if len(saved_videos) > settings.REMOVE_THRESHOLD_N:
+        saved_videos.sort(key=lambda x: x['sortby'])
+        vid = saved_videos[0]  # to_delete
+
+        vid_path = os.path.join('/app/shared/media/', vid['media_url'].split('media/')[1])
+        metadata_path = os.path.join('/app/shared/media/', vid['id'] + '.info.json')
+        print('Removing:', vid_path, metadata_path)
+
+        os.remove(vid_path)
+        os.remove(metadata_path)
 
     return HttpResponse("OK")
 
@@ -103,8 +116,6 @@ def get_file_data(filename):
     with open(path_info) as info_f:
         parsed_info = json.loads(info_f.read())
 
-    print(list(parsed_info.keys()))
-
     x = parsed_info["upload_date"]
     yr, mnth, day = map(int, [x[:4], x[4:6], x[6:]])
 
@@ -134,7 +145,6 @@ def get_file_data(filename):
 def get_rss_feed(request):
     nr = create_nr_podcast()
     ids = list(get_saved_ids())  # 'id.ext'
-    print(ids)
 
     for ep in ids:
         add_episode(nr, get_file_data(ep))
