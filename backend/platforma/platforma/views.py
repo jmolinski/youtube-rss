@@ -41,7 +41,7 @@ def update_local(request):
     )
     ids = [i for i in get_ids_process.stdout.decode("utf-8").split("\n") if len(i) > 3]
 
-    pool = multiprocessing.Pool(processes=3)
+    pool = multiprocessing.Pool(processes=5)
     print(pool.map(download_video, ids))
 
     return HttpResponse("OK")
@@ -52,10 +52,10 @@ def create_nr_podcast():
     p.name = "NocneRadio youtube"
     p.description = "Feed kanalu youtube nocnego radia"
     p.language = "pl"
-    p.feed_url = "http://molinski.dev/feeds/nr/feed"
+    p.feed_url = "https://molinski.dev/feeds/nr/feed/"
     p.explicit = False
     p.complete = False
-    p.new_feed_url = "http://molinski.dev/feeds/nr/feed"
+    p.new_feed_url = "https://molinski.dev/feeds/nr/feed/"
     p.website = "https://nocneradio.pl"
 
     return p
