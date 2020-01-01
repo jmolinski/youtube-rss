@@ -81,20 +81,20 @@ def update_local(request):
 
 def create_nr_podcast():
     p = Podcast()
-    p.name = "NocneRadio youtube"
+    p.name = "Nocne Radio YouTube"
     p.description = "Feed kanalu youtube nocnego radia"
     p.language = "pl"
-    p.feed_url = "https://molinski.dev/feeds/nr/feed/"
+    p.feed_url = settings.NR_FEED_DOMAIN + "feeds/nr/feed/"
     p.explicit = False
     p.complete = False
-    p.new_feed_url = "https://molinski.dev/feeds/nr/feed/"
+    p.new_feed_url = settings.NR_FEED_DOMAIN + "feeds/nr/feed/"
     p.website = "https://nocneradio.pl"
+    p.image = "https://patronite.pl/upload/user/84115/okladka.jpg?1513161024"
 
     return p
 
 
 def add_episode(feed, video_data):
-    print(video_data)
     e1 = feed.add_episode()
     e1.id = video_data["id"]
     e1.title = video_data["title"]
@@ -139,7 +139,7 @@ def get_file_data(filename):
     yr, mnth, day = map(int, [x[:4], x[4:6], x[6:]])
 
     return {
-        "media_url": "https://molinski.dev/feeds/media/" + filename,
+        "media_url": settings.NR_FEED_DOMAIN + "feeds/media/" + filename,
         "size": os.path.getsize(path_vid),
         "id": video_id,
         "title": parsed_info["title"],
