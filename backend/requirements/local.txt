@@ -10,6 +10,6 @@ django-extensions==2.2.1
 # Wery useful toolbar for debuging project
 django-debug-toolbar==1.11
 
-youtube-dl
+youtube-dl==2020.01.01
 podgen==1.0.1
 atoma
