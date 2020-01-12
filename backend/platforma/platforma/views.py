@@ -14,7 +14,7 @@ from email.utils import parsedate_to_datetime
 
 def download_video(id):
     try:
-        return subprocess.call(
+        ret = subprocess.call(
             [
                 "youtube-dl",
                 "-f",
@@ -26,13 +26,29 @@ def download_video(id):
                 "128K",
                 "--write-info-json",
                 "--output",
-                r"/app/shared/media/%(id)s.%(ext)s.download",
-                "--exec",
-                f'"mv /app/shared/media/{id}.mp3.download /app/shared/media/{id}.mp3 && rm -f /app/shared/media/{id}.webm.download"',
-                "https://www.youtube.com/watch?v=" + id,
+                r"/app/shared/media/%(id)s.download.temp",
+                f"https://www.youtube.com/watch?v={id}",
             ],
             shell=False,
         )
+        subprocess.call(
+            [
+                "mv",
+                f"/app/shared/media/{id}.download.temp.info.json",
+                f"/app/shared/media/{id}.info.json",
+            ],
+            shell=False,
+        )
+        subprocess.call(
+            [
+                "mv",
+                f"/app/shared/media/{id}.download.mp3",
+                f"/app/shared/media/{id}.mp3",
+            ],
+            shell=False,
+        )
+
+        return ret
     except Exception as e:
         print(e)
         return 1
@@ -67,7 +83,7 @@ def update_local(request):
         print(ids_to_download, "] to not git 429 too many requests")
 
     if ids_to_download:
-        pool = multiprocessing.Pool(processes=2)
+        pool = multiprocessing.Pool(processes=settings.CONCURRENT_DOWNLOADS)
         print(pool.map(download_video, list(ids_to_download)))
 
     ######### clear old files
