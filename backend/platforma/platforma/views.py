@@ -13,6 +13,10 @@ from email.utils import parsedate_to_datetime
 
 
 def download_video(id):
+    if id in set(get_currently_downloading_ids()):
+        print(f'Skipping {id} [the video is already being processed]')
+        return -1
+
     try:
         ret = subprocess.call(
             [
@@ -71,11 +75,13 @@ def update_local(request):
         i for i in get_ids_process.stdout.decode("utf-8").split("\n") if len(i) > 3
     }
     already_downloaded = {x["id"] for x in map(get_file_data, get_saved_ids())}
-
+    currently_downloading = set(get_currently_downloading_ids())
     to_skip = ids_to_download & already_downloaded
-    ids_to_download = ids_to_download - already_downloaded
+    ids_to_download = ids_to_download - (already_downloaded | currently_downloading)
 
     print("Skipping already downloaded ids:", to_skip)
+    if currently_downloading:
+        print("Skipping currently downloading ids:", currently_downloading)
 
     if len(ids_to_download) > 5:
         print("Capping full list to download [", ids_to_download, "] to [", end=" ")
@@ -167,6 +173,13 @@ def get_saved_ids():
         for file in files:
             if file.count(".") == 1 and "download" not in file:
                 yield file
+
+
+def get_currently_downloading_ids():
+    for root, dirs, files in os.walk("/app/shared/media/"):
+        for file in files:
+            if "download" in file:
+                yield file.split('.')[0]
 
 
 def get_file_data(filename):
