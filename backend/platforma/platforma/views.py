@@ -14,7 +14,7 @@ from email.utils import parsedate_to_datetime
 
 def download_video(id):
     if id in set(get_currently_downloading_ids()):
-        print(f'Skipping {id} [the video is already being processed]')
+        print(f"Skipping {id} [the video is already being processed]")
         return -1
 
     try:
@@ -91,6 +91,8 @@ def update_local(request):
     if ids_to_download:
         pool = multiprocessing.Pool(processes=settings.CONCURRENT_DOWNLOADS)
         print(pool.map(download_video, list(ids_to_download)))
+    else:
+        print("Nothing to download")
 
     ######### clear old files
 
@@ -179,7 +181,7 @@ def get_currently_downloading_ids():
     for root, dirs, files in os.walk("/app/shared/media/"):
         for file in files:
             if "download" in file:
-                yield file.split('.')[0]
+                yield file.split(".")[0]
 
 
 def get_file_data(filename):
