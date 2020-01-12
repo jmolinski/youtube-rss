@@ -12,4 +12,3 @@ django-debug-toolbar==1.11
 
 youtube-dl==2020.01.01
 podgen==1.0.1
-atoma

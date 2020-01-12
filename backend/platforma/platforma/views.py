@@ -7,7 +7,6 @@ import pytz
 from django.http.response import HttpResponse
 import os
 import json
-import atoma
 import requests
 import xml.etree.ElementTree as ET
 from email.utils import parsedate_to_datetime
@@ -20,9 +19,15 @@ def download_video(id):
                 "youtube-dl",
                 "-f",
                 "bestaudio",
+                "--extract-audio",
+                "--audio-format",
+                "mp3",
+                "--audio-quality 128K",
                 "--write-info-json",
                 "--output",
-                r"/app/shared/media/%(id)s.%(ext)s",
+                r"/app/shared/media/%(id)s.%(ext)s.download",
+                "--exec",
+                f'"mv /app/shared/media/{id}.mp3.download /app/shared/media/{id}.mp3 && rm -f /app/shared/media/{id}.webm.download"',
                 "https://www.youtube.com/watch?v=" + id,
             ],
             shell=False,
@@ -98,6 +103,12 @@ def create_nr_podcast(extra):
     return p
 
 
+def audio_format_to_mime(fmt):
+    if fmt == "mp3":
+        return "audio/mpeg"
+    return "audio/" + fmt
+
+
 def add_episode(feed, video_data):
     e1 = feed.add_episode()
     e1.id = video_data["id"]
@@ -123,21 +134,21 @@ def add_episode(feed, video_data):
         e1.media = Media(
             video_data["media_url"],
             video_data["size"],
-            type="audio/" + video_data["extension"],
+            type=audio_format_to_mime(video_data["extension"]),
             duration=datetime.timedelta(seconds=video_data["duration"]),
         )
     else:
         e1.media = Media(
             video_data["media_url"],
             video_data["size"],
-            type="audio/" + video_data["extension"],
+            type=audio_format_to_mime(video_data["extension"]),
         )
 
 
 def get_saved_ids():
     for root, dirs, files in os.walk("/app/shared/media/"):
         for file in files:
-            if file.count(".") == 1:
+            if file.count(".") == 1 and "download" not in file:
                 yield file
 
 
