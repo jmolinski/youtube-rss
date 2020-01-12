@@ -16,6 +16,9 @@ def download_video(id):
     if id in set(get_currently_downloading_ids()):
         print(f"Skipping {id} [the video is already being processed]")
         return -1
+    if id in {fname.split(".")[0] for fname in get_saved_ids()}:
+        print(f"Skipping {id} [the video has already been processed]")
+        return -2
 
     try:
         ret = subprocess.call(
@@ -123,7 +126,7 @@ def create_nr_podcast(extra):
     p.complete = False
     p.new_feed_url = settings.NR_FEED_DOMAIN + "feeds/nr/feed/"
     p.website = "https://nocneradio.pl"
-    p.image = "https://patronite.pl/upload/user/84115/okladka.jpg?1513161024"
+    p.image = "https://patronite.pl/upload/user/84115/okladka.jpg"
 
     return p
 
