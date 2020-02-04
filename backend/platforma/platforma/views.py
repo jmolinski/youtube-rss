@@ -3,7 +3,6 @@ from podgen import Podcast, Media, htmlencode
 import datetime
 import pytz
 from django.http.response import HttpResponse
-import os
 import requests
 import xml.etree.ElementTree as ET
 from email.utils import parsedate_to_datetime
@@ -50,20 +49,6 @@ def add_episode(feed, video_data):
             video_data["size"],
             type=services.audio_format_to_mime(video_data["extension"]),
         )
-
-
-def get_saved_ids():
-    for root, dirs, files in os.walk("/app/shared/media/"):
-        for file in files:
-            if file.count(".") == 1 and "download" not in file:
-                yield file
-
-
-def get_saved_only_ids():
-    for root, dirs, files in os.walk("/app/shared/media/"):
-        for file in files:
-            if file.count(".") == 1 and "download" not in file:
-                yield file.split(".")[0]
 
 
 def parse_raw_nr_item(item):
