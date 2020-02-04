@@ -11,12 +11,9 @@ class Episode(models.Model):
     redownloaded = models.BooleanField(default=False)
 
     def is_visible(self):
-        return (
-            self.youtube_id
-            and (not self.currently_downloading)
-            and (not self.hidden)
-            and (not self.deleted_old)
-        )
+        if self.deleted_old or self.hidden or self.currently_downloading:
+            return False
+        return True
 
     def get_filename(self):
         return f"{self.youtube_id}.mp3"

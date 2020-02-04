@@ -6,6 +6,10 @@ import json
 from platforma.platforma import models
 
 
+def publish_episode(youtube_id):
+    pass
+
+
 def download_video(id):
     if models.Episode.filter(youtube_id=id, currently_downloading=True).exists():
         print(f"Skipping {id} [the video is already being processed]")
@@ -64,7 +68,8 @@ def update_local():
     ## add local files to database -- TEMP #TODO
 
     for yt_id in get_saved_only_ids():
-        models.Episode(youtube_id=yt_id, redownloaded=True).save()
+        if not models.Episode.objects.filter(youtube_id=yt_id).exists():
+            models.Episode(youtube_id=yt_id, redownloaded=True).save()
 
     ## proceed
     get_ids_process = subprocess.run(
