@@ -1,140 +1,19 @@
 from django.conf import settings
 from podgen import Podcast, Media, htmlencode
-import multiprocessing
-import subprocess
 import datetime
 import pytz
 from django.http.response import HttpResponse
 import os
-import json
 import requests
 import xml.etree.ElementTree as ET
 from email.utils import parsedate_to_datetime
-
-
-def download_video(id):
-    if id in set(get_currently_downloading_ids()):
-        print(f"Skipping {id} [the video is already being processed]")
-        return -1
-    if id in {fname.split(".")[0] for fname in get_saved_ids()}:
-        print(f"Skipping {id} [the video has already been processed]")
-        return -2
-
-    try:
-        ret = subprocess.call(
-            [
-                "youtube-dl",
-                "-f",
-                "bestaudio",
-                "--extract-audio",
-                "--audio-format",
-                "mp3",
-                "--audio-quality",
-                "128K",
-                "--write-info-json",
-                "--output",
-                r"/app/shared/media/%(id)s.download.temp",
-                f"https://www.youtube.com/watch?v={id}",
-            ],
-            shell=False,
-        )
-        subprocess.call(
-            [
-                "mv",
-                f"/app/shared/media/{id}.download.temp.info.json",
-                f"/app/shared/media/{id}.info.json",
-            ],
-            shell=False,
-        )
-        subprocess.call(
-            [
-                "mv",
-                f"/app/shared/media/{id}.download.mp3",
-                f"/app/shared/media/{id}.mp3",
-            ],
-            shell=False,
-        )
-
-        return ret
-    except Exception as e:
-        print(e)
-        return 1
+from platforma.platforma import models
+from platforma.platforma import services
 
 
 def update_local(request):
-    get_ids_process = subprocess.run(
-        [
-            "youtube-dl",
-            "--get-id",
-            "--playlist-items",
-            "1-" + str(settings.KEEP_LAST_N),
-            "--skip-download",
-            "--flat-playlist",
-            r"https://www.youtube.com/channel/UCH1w8bpxhzR2ACjPE__PEkw/",
-        ],
-        capture_output=True,
-    )
-    ids_to_download = {
-        i for i in get_ids_process.stdout.decode("utf-8").split("\n") if len(i) > 3
-    }
-    already_downloaded = {x["id"] for x in map(get_file_data, get_saved_ids())}
-    currently_downloading = set(get_currently_downloading_ids())
-    to_skip = ids_to_download & already_downloaded
-    ids_to_download = ids_to_download - (already_downloaded | currently_downloading)
-
-    print("Skipping already downloaded ids:", to_skip)
-    if currently_downloading:
-        print("Skipping currently downloading ids:", currently_downloading)
-
-    if len(ids_to_download) > 5:
-        print("Capping full list to download [", ids_to_download, "] to [", end=" ")
-        ids_to_download = set(list(ids_to_download)[:5])
-        print(ids_to_download, "] to not git 429 too many requests")
-
-    if ids_to_download:
-        pool = multiprocessing.Pool(processes=settings.CONCURRENT_DOWNLOADS)
-        print(pool.map(download_video, list(ids_to_download)))
-    else:
-        print("Nothing to download")
-
-    ######### clear old files
-
-    saved_videos = list(map(get_file_data, get_saved_ids()))
-    if len(saved_videos) > settings.REMOVE_THRESHOLD_N:
-        saved_videos.sort(key=lambda x: x["sortby"])
-        vid = saved_videos[0]  # to_delete
-
-        vid_path = os.path.join(
-            "/app/shared/media/", vid["media_url"].split("media/")[1]
-        )
-        metadata_path = os.path.join("/app/shared/media/", vid["id"] + ".info.json")
-        print("Removing:", vid_path, metadata_path)
-
-        os.remove(vid_path)
-        os.remove(metadata_path)
-
+    services.update_local()
     return HttpResponse("OK")
-
-
-def create_nr_podcast(extra):
-    p = Podcast()
-    p.name = extra["name"]
-    p.description = "Feed kanalu youtube nocnego radia"
-    p.language = "pl"
-    p.feed_url = settings.NR_FEED_DOMAIN + "feeds/nr/feed/" + extra["url"]
-    p.explicit = False
-    p.complete = False
-    p.new_feed_url = settings.NR_FEED_DOMAIN + "feeds/nr/feed/"
-    p.website = "https://nocneradio.pl"
-    p.image = "https://patronite.pl/upload/user/84115/okladka.jpg"
-
-    return p
-
-
-def audio_format_to_mime(fmt):
-    if fmt == "mp3":
-        return "audio/mpeg"
-    return "audio/" + fmt
 
 
 def add_episode(feed, video_data):
@@ -162,14 +41,14 @@ def add_episode(feed, video_data):
         e1.media = Media(
             video_data["media_url"],
             video_data["size"],
-            type=audio_format_to_mime(video_data["extension"]),
+            type=services.audio_format_to_mime(video_data["extension"]),
             duration=datetime.timedelta(seconds=video_data["duration"]),
         )
     else:
         e1.media = Media(
             video_data["media_url"],
             video_data["size"],
-            type=audio_format_to_mime(video_data["extension"]),
+            type=services.audio_format_to_mime(video_data["extension"]),
         )
 
 
@@ -180,48 +59,11 @@ def get_saved_ids():
                 yield file
 
 
-def get_currently_downloading_ids():
+def get_saved_only_ids():
     for root, dirs, files in os.walk("/app/shared/media/"):
         for file in files:
-            if "download" in file:
+            if file.count(".") == 1 and "download" not in file:
                 yield file.split(".")[0]
-
-
-def get_file_data(filename):
-    video_id, ext = filename.split(".")
-
-    path_vid, path_info = (
-        os.path.join("/app/shared/media", filename),
-        os.path.join("/app/shared/media", video_id + ".info.json"),
-    )
-
-    with open(path_info) as info_f:
-        parsed_info = json.loads(info_f.read())
-
-    x = parsed_info["upload_date"]
-    yr, mnth, day = map(int, [x[:4], x[4:6], x[6:]])
-
-    return {
-        "media_url": settings.NR_FEED_DOMAIN + "feeds/media/" + filename,
-        "size": os.path.getsize(path_vid),
-        "id": video_id,
-        "title": parsed_info["title"],
-        "upload_date": parsed_info["upload_date"],
-        "url": parsed_info["webpage_url"],
-        "filesize_raw": parsed_info["filesize"],
-        "filltitle": parsed_info["fulltitle"],
-        "channel_id": parsed_info["channel_id"],
-        "description": parsed_info["description"],
-        "thumbnail": parsed_info.get("thumbnails", [{"url": "https://example.com"}])[0][
-            "url"
-        ],
-        "extension": ext,
-        "duration": parsed_info["duration"],
-        "sortby": (parsed_info["upload_date"], parsed_info["duration"]),
-        "year": yr,
-        "month": mnth,
-        "day": day,
-    }
 
 
 def parse_raw_nr_item(item):
@@ -247,6 +89,31 @@ def parse_raw_nr_item(item):
     }
 
 
+def create_nr_podcast(extra):
+    p = Podcast()
+    p.name = extra["name"]
+    p.description = "Feed kanalu youtube nocnego radia"
+    p.language = "pl"
+    p.feed_url = settings.NR_FEED_DOMAIN + "feeds/nr/feed/" + extra["url"]
+    p.explicit = False
+    p.complete = False
+    p.new_feed_url = settings.NR_FEED_DOMAIN + "feeds/nr/feed/"
+    p.website = "https://nocneradio.pl"
+    p.image = "https://patronite.pl/upload/user/84115/okladka.jpg"
+
+    return p
+
+
+def get_rss_feed(request):
+    nr = create_nr_podcast({"url": "", "name": "Nocne Radio YouTube Channel"})
+    ids = [y.get_filename() for y in models.Episode.objects.all() if y.is_visible()]
+
+    for ep in ids:
+        add_episode(nr, services.get_file_data(ep))
+
+    return HttpResponse(nr.rss_str(), content_type="text/xml")
+
+
 def get_radio_feed():
     try:
         data = requests.get("http://nocneradio.pl/feed/")
@@ -262,22 +129,12 @@ def get_radio_feed():
         pass
 
 
-def get_rss_feed(request):
-    nr = create_nr_podcast({"url": "", "name": "Nocne Radio YouTube Channel"})
-    ids = list(get_saved_ids())  # 'id.ext'
-
-    for ep in ids:
-        add_episode(nr, get_file_data(ep))
-
-    return HttpResponse(nr.rss_str(), content_type="text/xml")
-
-
 def get_combined_rss_feed(request):
     nr = create_nr_podcast({"url": "combined/", "name": "Nocne Radio (+ YouTube)"})
-    ids = list(get_saved_ids())  # 'id.ext'
+    ids = [y.get_filename() for y in models.Episode.objects.all() if y.is_visible()]
 
     for ep in ids:
-        add_episode(nr, get_file_data(ep))
+        add_episode(nr, services.get_file_data(ep))
 
     for ep in get_radio_feed():
         add_episode(nr, ep)
