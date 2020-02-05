@@ -67,6 +67,7 @@ def send_draft(episode: models.Episode):
     img_data: Optional[dict] = None
     thumbnail_url = ep_data["thumbnail"]
     if thumbnail_url:
+        thumbnail_url = thumbnail_url.replace('hqdefault.jpg', 'maxresdefault.jpg')
         cropped_img = get_cropped_image_bytes(thumbnail_url)
         if cropped_img:
             try:
