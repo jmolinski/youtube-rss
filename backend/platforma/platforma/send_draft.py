@@ -29,7 +29,7 @@ def send_drafts():
             break  # TODO
 
 
-def image_to_byte_array(image, format='jpeq'):
+def image_to_byte_array(image, format='jpeg'):
     byte_stream = io.BytesIO()
     image.save(byte_stream, format=format)
     return byte_stream.getvalue()
