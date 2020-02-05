@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('platforma', '0004_auto_20200204_1728'),
+        ("platforma", "0004_auto_20200204_1728"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='episode',
-            name='redownloaded',
+            model_name="episode",
+            name="redownloaded",
             field=models.BooleanField(default=False),
         ),
     ]

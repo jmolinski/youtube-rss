@@ -77,3 +77,7 @@ KEEP_LAST_N = env.int("KEEP_LAST_N", 5)
 REMOVE_THRESHOLD_N = env.int("REMOVE_THRESHOLD_N", 5)
 NR_FEED_DOMAIN = "https://nocneradio.xyz/"
 CONCURRENT_DOWNLOADS = env.int("CONCURRENT_DOWNLOADS", 1)
+
+NR_USERNAME = env("NR_USERNAME", default="nr-yt")
+NR_PASSWD = env("NR_PASSWD", default="XXXX")
+DRAFTS_ENABLED = bool(env.int("DRAFTS_ENABLED", default=0))

@@ -1,17 +1,21 @@
-from django.conf import settings
-from podgen import Podcast, Media, htmlencode
 import datetime
-import pytz
-from django.http.response import HttpResponse
-import requests
 import xml.etree.ElementTree as ET
+
 from email.utils import parsedate_to_datetime
-from platforma.platforma import models
-from platforma.platforma import services
+
+from django.conf import settings
+from django.http.response import HttpResponse
+
+import pytz
+import requests
+
+from platforma.platforma import models, services
+from podgen import Media, Podcast, htmlencode
 
 
 def update_local(request):
     services.update_local()
+    services.send_drafts()
     return HttpResponse("OK")
 
 
@@ -94,7 +98,10 @@ def get_rss_feed(request):
     ids = [y.get_filename() for y in models.Episode.objects.all() if y.is_visible()]
 
     for ep in ids:
-        add_episode(nr, services.get_file_data(ep))
+        try:
+            add_episode(nr, services.get_file_data(ep))
+        except:
+            print("error rendering episode", ep)
 
     return HttpResponse(nr.rss_str(), content_type="text/xml")
 
@@ -119,7 +126,10 @@ def get_combined_rss_feed(request):
     ids = [y.get_filename() for y in models.Episode.objects.all() if y.is_visible()]
 
     for ep in ids:
-        add_episode(nr, services.get_file_data(ep))
+        try:
+            add_episode(nr, services.get_file_data(ep))
+        except:
+            print("error rendering episode", ep)
 
     for ep in get_radio_feed():
         add_episode(nr, ep)
