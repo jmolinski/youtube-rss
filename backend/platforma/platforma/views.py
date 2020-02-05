@@ -9,13 +9,13 @@ from django.http.response import HttpResponse
 import pytz
 import requests
 
-from platforma.platforma import models, services
+from platforma.platforma import models, send_draft, services, update_local
 from podgen import Media, Podcast, htmlencode
 
 
-def update_local(request):
-    services.update_local()
-    services.send_drafts()
+def update_local_endpoint(request):
+    update_local.update_local()
+    send_draft.send_drafts()
     return HttpResponse("OK")
 
 
