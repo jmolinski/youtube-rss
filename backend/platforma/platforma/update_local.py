@@ -9,10 +9,10 @@ from platforma.platforma.services import get_file_data, get_saved_only_ids
 
 
 def download_video(id):
-    if models.Episode.filter(youtube_id=id, currently_downloading=True).exists():
+    if models.Episode.objects.filter(youtube_id=id, currently_downloading=True).exists():
         print(f"Skipping {id} [the video is already being processed]")
         return -1
-    if models.Episode.filter(youtube_id=id).exists():
+    if models.Episode.objects.filter(youtube_id=id).exists():
         print(f"Skipping {id} [the video has already been processed or is obsolete]")
         return -2
 
@@ -130,6 +130,6 @@ def update_local():
 
         os.remove(vid_path)
         os.remove(metadata_path)
-        episode = models.Episode.get(youtube_id=vid["id"])
+        episode = models.Episode.objects.get(youtube_id=vid["id"])
         episode.deleted_old = True
         episode.save()
