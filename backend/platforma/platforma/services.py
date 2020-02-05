@@ -31,6 +31,13 @@ def send_drafts():
 
 
 def send_draft(episode: models.Episode):
+    print("Submitting draft", episode.youtube_id)
+    if episode.hidden or episode.draft_posted:
+        print("Aborting sending draft for", episode.youtube_id)
+
+    episode.hidden = True
+    episode.save()
+
     client = xmlrpc.client.ServerProxy("http://nocneradio.pl/xmlrpc.php")
     ep_data = get_file_data(episode.get_filename())
 
@@ -51,43 +58,57 @@ def send_draft(episode: models.Episode):
                         "bits": xmlrpc.client.Binary(r.content),
                     },
                 )
+                print("Uploaded thumbnail for", episode.youtube_id)
             except:
-                pass
+                print("Failed to upload thumbnail for", episode.youtube_id)
 
     # 2. create draft post
-    date = f"{ep_data['day']:02d}.{ep_data['month']:02d}.{ep_data['year']:04}"
-    original_title = ep_data["title"]
-    current_time = datetime.today().strftime("%Y-%m-%d-%H:%M:%S")
+    try:
+        date = f"{ep_data['day']:02d}.{ep_data['month']:02d}.{ep_data['year']:04}"
+        original_title = ep_data["title"]
+        current_time = datetime.today().strftime("%Y-%m-%d-%H:%M:%S")
 
-    original_description = ep_data["description"].split("Donejty na")[
-        0
-    ]  # cut the footer about tipanddonation
-    padded_description = (
-        original_description + " \n\n" if original_description.strip() else ""
-    )
+        original_description = ep_data["description"].split("Donejty na")[
+            0
+        ]  # cut the footer about tipanddonation
+        padded_description = (
+            original_description + " \n\n" if original_description.strip() else ""
+        )
 
-    description = (
-        f"[{date}] \n{padded_description}Wpis utworzony automatycznie na podstawie audycji"
-        f" na youtube: https://www.youtube.com/watch?v={episode.youtube_id}\n\n"
-        f"Identyfikator ###{episode.youtube_id} nr-yt==v0.0.1 {current_time}###\n"
-    )
-    content = {
-        "post_type": "post",
-        "post_title": original_title,
-        # "post_excerpt": "test_excerpt",
-        "post_content": description,
-        "post_format": "standard",
-        "custom_fields": [
-            {
-                "key": "enclosure",
-                "value": f"https://nocneradio.xyz/feeds/media/{episode.youtube_id}.mp3\n\naudio/mpeg",
-            },
-        ],
-    }
-    if img_data and "attachment_id" in img_data:
-        content["post_thumbnail"] = int(img_data["attachment_id"])
+        description = (
+            f"[{date}] \n{padded_description}Wpis utworzony automatycznie na podstawie audycji"
+            f" na youtube: https://www.youtube.com/watch?v={episode.youtube_id}\n\n"
+            f"Identyfikator ###{episode.youtube_id} nr-yt==v0.0.1 {current_time}###\n"
+        )
+        content = {
+            "post_type": "post",
+            "post_title": original_title,
+            # "post_excerpt": "test_excerpt",
+            "post_content": description,
+            "post_format": "standard",
+            "custom_fields": [
+                {
+                    "key": "enclosure",
+                    "value": f"https://nocneradio.xyz/feeds/media/{episode.youtube_id}.mp3\n\naudio/mpeg",
+                },
+            ],
+        }
+        if img_data and "attachment_id" in img_data:
+            content["post_thumbnail"] = int(img_data["attachment_id"])
+    except Exception as e:
+        print("Problem preparing post data for draft", episode.youtube_id)
+        print("Error datails:", str(e), repr(e))
+        return
 
-    client.wp.newPost(0, settings.NR_USERNAME, settings.NR_PASSWD, content)
+    try:
+        client.wp.newPost(0, settings.NR_USERNAME, settings.NR_PASSWD, content)
+    except Exception as e:
+        print("Problem submitting draft post for", episode.youtube_id)
+        print("Error datails:", str(e), repr(e))
+    else:
+        episode.draft_posted = True
+        episode.hidden = False
+        episode.save()
 
 
 def download_video(id):
