@@ -33,7 +33,7 @@ def get_cropped_image_bytes(url):
     r = requests.get(url, stream=True)
 
     if not r.status_code == 200:
-        return None
+        return
 
     try:
         image = Image.open(io.BytesIO(r.content))
@@ -41,9 +41,10 @@ def get_cropped_image_bytes(url):
         cropped = image.crop((0, 0, min(w, 846), min(h, 256)))
 
         return cropped.tobytes()
-    except:
+    except Exception as e:
         print("Failed to crop thumbnail")
-        return None
+        print("Error datails:", str(e), repr(e))
+        return
 
 
 def send_draft(episode: models.Episode):
