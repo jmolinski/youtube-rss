@@ -12,5 +12,3 @@ django-debug-toolbar==1.11
 
 youtube-dl==2020.1.24
 podgen==1.0.1
-wordpress-api
-python-wordpress-xmlrpc
