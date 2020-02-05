@@ -9,7 +9,9 @@ from platforma.platforma.services import get_file_data, get_saved_only_ids
 
 
 def download_video(id):
-    if models.Episode.objects.filter(youtube_id=id, currently_downloading=True).exists():
+    if models.Episode.objects.filter(
+        youtube_id=id, currently_downloading=True
+    ).exists():
         print(f"Skipping {id} [the video is already being processed]")
         return -1
     if models.Episode.objects.filter(youtube_id=id).exists():

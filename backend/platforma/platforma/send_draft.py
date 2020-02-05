@@ -1,3 +1,4 @@
+import io
 import xmlrpc
 import xmlrpc.client
 
@@ -8,6 +9,7 @@ from django.conf import settings
 
 import requests
 
+from PIL import Image
 from platforma.platforma import models
 from platforma.platforma.services import get_file_data
 
@@ -27,6 +29,23 @@ def send_drafts():
             break  # TODO
 
 
+def get_cropped_image_bytes(url):
+    r = requests.get(url, stream=True)
+
+    if not r.status_code == 200:
+        return None
+
+    try:
+        image = Image.open(io.BytesIO(r.content))
+        w, h = image.size()
+        cropped = image.crop((0, 0, min(w, 846), min(h, 256)))
+
+        return cropped.tobytes()
+    except:
+        print("Failed to crop thumbnail")
+        return None
+
+
 def send_draft(episode: models.Episode):
     print("Submitting draft", episode.youtube_id)
     if episode.hidden or episode.draft_posted:
@@ -42,8 +61,8 @@ def send_draft(episode: models.Episode):
     img_data: Optional[dict] = None
     thumbnail_url = ep_data["thumbnail"]
     if thumbnail_url:
-        r = requests.get(thumbnail_url, stream=True)
-        if r.status_code == 200:
+        cropped_img = get_cropped_image_bytes(thumbnail_url)
+        if cropped_img:
             try:
                 img_data = client.wp.uploadFile(
                     0,
@@ -52,7 +71,7 @@ def send_draft(episode: models.Episode):
                     {
                         "name": episode.youtube_id + "_img.jpg",
                         "type": "image/jpeg",
-                        "bits": xmlrpc.client.Binary(r.content),
+                        "bits": xmlrpc.client.Binary(cropped_img),
                     },
                 )
                 print("Uploaded thumbnail for", episode.youtube_id)
@@ -73,8 +92,8 @@ def send_draft(episode: models.Episode):
         )
 
         description = (
-            f"[{date}] \n{padded_description}Wpis utworzony automatycznie na podstawie audycji"
-            f" na youtube: https://www.youtube.com/watch?v={episode.youtube_id}\n\n"
+            f"{date} \n{padded_description}Wpis utworzony automatycznie na podstawie audycji"
+            f' na youtube: <a href="https://www.youtube.com/watch?v=PHHpI33Y7cA">link</a>\n\n'
             f"Identyfikator ###{episode.youtube_id} nr-yt==v0.0.1 {current_time}###\n"
         )
         content = {
@@ -103,6 +122,9 @@ def send_draft(episode: models.Episode):
         print("Problem submitting draft post for", episode.youtube_id)
         print("Error datails:", str(e), repr(e))
     else:
+        print("Submitted draft for", episode.youtube_id)
         episode.draft_posted = True
+        episode.save()
+    finally:
         episode.hidden = False
         episode.save()
