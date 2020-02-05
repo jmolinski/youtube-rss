@@ -37,7 +37,7 @@ def get_cropped_image_bytes(url):
 
     try:
         image = Image.open(io.BytesIO(r.content))
-        w, h = image.size()
+        w, h = image.size
         cropped = image.crop((0, 0, min(w, 846), min(h, 256)))
 
         return cropped.tobytes()
