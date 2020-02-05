@@ -30,7 +30,7 @@ def download_video(id):
                 "--audio-format",
                 "mp3",
                 "--audio-quality",
-                "128K",
+                "96K",
                 "--write-info-json",
                 "--output",
                 r"/app/shared/media/%(id)s.download.temp",
@@ -65,13 +65,6 @@ def download_video(id):
 
 
 def update_local():
-    ## add local files to database -- TEMP #TODO
-
-    for yt_id in get_saved_only_ids():
-        if not models.Episode.objects.filter(youtube_id=yt_id).exists():
-            models.Episode(youtube_id=yt_id, redownloaded=True).save()
-
-    ## proceed
     get_ids_process = subprocess.run(
         [
             "youtube-dl",
