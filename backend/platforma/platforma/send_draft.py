@@ -100,7 +100,7 @@ def send_draft(episode: models.Episode):
 
         description = (
             f"{date} \n{padded_description}Wpis utworzony automatycznie na podstawie audycji"
-            f' na youtube: <a href="https://www.youtube.com/watch?v=PHHpI33Y7cA">link</a>\n\n'
+            f' na youtube: <a href="https://www.youtube.com/watch?v={episode.youtube_id}">link</a>\n\n'
             f"Identyfikator ###{episode.youtube_id} nr-yt==v0.0.1 {current_time}###\n"
         )
         content = {
