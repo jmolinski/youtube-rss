@@ -29,6 +29,12 @@ def send_drafts():
             break  # TODO
 
 
+def image_to_byte_array(image):
+    byte_stream = io.BytesIO()
+    image.save(byte_stream, format=image.format)
+    return byte_stream.getvalue()
+
+
 def get_cropped_image_bytes(url):
     r = requests.get(url, stream=True)
 
@@ -39,8 +45,7 @@ def get_cropped_image_bytes(url):
         image = Image.open(io.BytesIO(r.content))
         w, h = image.size
         cropped = image.crop((0, 0, min(w, 846), min(h, 256)))
-
-        return cropped.tobytes()
+        return image_to_byte_array(cropped)
     except Exception as e:
         print("Failed to crop thumbnail")
         print("Error datails:", str(e), repr(e))
