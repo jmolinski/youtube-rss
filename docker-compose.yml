@@ -14,6 +14,9 @@ services:
     build:
       context: .
       dockerfile: ./docker/local/backend/Dockerfile
+      args:
+        SSH_KEY_PUB: ${SSH_KEY_PUB}
+        SSH_KEY: ${SSH_KEY}
     ports:
       - "6789:8000"
     depends_on:
