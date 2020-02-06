@@ -1,4 +1,5 @@
 import io
+import subprocess
 import xmlrpc
 import xmlrpc.client
 
@@ -6,6 +7,7 @@ from datetime import datetime
 from typing import Optional
 
 from django.conf import settings
+from django.utils.text import slugify
 
 import requests
 
@@ -79,6 +81,31 @@ def upload_thumbnail(thumbnail_url, episode, client):
 
 def upload_mp3_file_to_remote_server(episode, ep_data):
     date = f"{ep_data['day']:02d}_{ep_data['month']:02d}_{ep_data['year']:04}"
+    slugified_title = slugify(ep_data["title"])
+
+    remote_name = f"{slugified_title}-{date}-nr-yt-{episode.youtube_id}.mp3"
+    episode.remote_filename = remote_name
+    episode.save()
+
+    try:
+        ret = subprocess.call(
+            [
+                "scp",
+                "-o",
+                "StrictHostKeyChecking=no",
+                f"/app/shared/media/{episode.get_filename()}",
+                f"archiwum@nocneradio.pl:~/audycje/automat/{remote_name}",
+            ],
+            shell=False,
+        )
+        if ret != 0:
+            raise ValueError(
+                f"Error: scp returncode={ret} for episode {episode.get_filename()}"
+            )
+        return ret
+    except:
+        print("Error uploading file", episode.get_filename(), "to remote server")
+        raise
 
 
 def prepare_wordpress_post_content(episode, ep_data, img_data):
