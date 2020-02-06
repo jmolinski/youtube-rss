@@ -9,7 +9,7 @@ ENV HOME=/home/django
 
 
 RUN apt-get -qq update \
-    && apt-get -qq -y install libpq-dev gcc vim gettext curl ffmpeg \
+    && apt-get -qq -y install libpq-dev gcc vim gettext curl ffmpeg openssh-client \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get -qq -y clean
 
