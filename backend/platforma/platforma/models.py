@@ -9,6 +9,7 @@ class Episode(models.Model):
     deleted_old = models.BooleanField(default=False)
     download_date = models.DateTimeField(null=True, default=None)
     redownloaded = models.BooleanField(default=False)
+    remote_filename = models.CharField(max_length=1000, null=True, blank=True)
 
     def is_visible(self):
         if self.deleted_old or self.hidden or self.currently_downloading:
