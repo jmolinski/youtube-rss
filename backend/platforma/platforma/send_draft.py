@@ -135,7 +135,7 @@ def prepare_wordpress_post_content(episode, ep_data, img_data):
         "custom_fields": [
             {
                 "key": "enclosure",
-                "value": f"https://nocneradio.xyz/feeds/media/{episode.youtube_id}.mp3\n\naudio/mpeg",
+                "value": f"https://archiwum.nocneradio.pl/automat/{episode.remote_filename}\n\naudio/mpeg",
             },
         ],
     }
