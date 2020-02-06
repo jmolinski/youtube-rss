@@ -29,7 +29,7 @@ def send_drafts():
             break  # TODO
 
 
-def image_to_byte_array(image, format='jpeg'):
+def image_to_byte_array(image, format="jpeg"):
     byte_stream = io.BytesIO()
     image.save(byte_stream, format=format)
     return byte_stream.getvalue()
@@ -67,7 +67,7 @@ def send_draft(episode: models.Episode):
     img_data: Optional[dict] = None
     thumbnail_url = ep_data["thumbnail"]
     if thumbnail_url:
-        thumbnail_url = thumbnail_url.replace('hqdefault.jpg', 'maxresdefault.jpg')
+        thumbnail_url = thumbnail_url.replace("hqdefault.jpg", "maxresdefault.jpg")
         cropped_img = get_cropped_image_bytes(thumbnail_url)
         if cropped_img:
             try:
@@ -101,7 +101,7 @@ def send_draft(episode: models.Episode):
         description = (
             f"{date} \n{padded_description}Wpis utworzony automatycznie na podstawie audycji"
             f' na youtube: <a href="https://www.youtube.com/watch?v={episode.youtube_id}">link</a>\n\n'
-            f"Identyfikator ###{episode.youtube_id} nr-yt==v0.0.1 {current_time}###\n"
+            f"<!--ID###{episode.youtube_id} nr-yt==v0.0.1 {current_time}###-->\n"
         )
         content = {
             "post_type": "post",
@@ -109,6 +109,7 @@ def send_draft(episode: models.Episode):
             # "post_excerpt": "test_excerpt",
             "post_content": description,
             "post_format": "standard",
+            "comment_status": "open",
             "custom_fields": [
                 {
                     "key": "enclosure",

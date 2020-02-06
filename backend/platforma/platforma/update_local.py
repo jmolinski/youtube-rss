@@ -5,7 +5,7 @@ import subprocess
 from django.conf import settings
 
 from platforma.platforma import models
-from platforma.platforma.services import get_file_data, get_saved_only_ids
+from platforma.platforma.services import get_file_data
 
 
 def download_video(id):
