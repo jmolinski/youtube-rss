@@ -28,7 +28,6 @@ def send_drafts():
     for ep in eps:
         if ep.is_visible():
             send_draft(ep)
-            break  # TODO
 
 
 def image_to_byte_array(image, format="jpeg"):
