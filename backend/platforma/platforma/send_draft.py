@@ -116,13 +116,24 @@ def prepare_wordpress_post_content(episode, ep_data, img_data):
         0
     ]  # cut the footer about tipanddonation
     padded_description = (
-        original_description + " \n\n" if original_description.strip() else ""
+        original_description.strip() if original_description.strip() else ""
     )
+    if not padded_description:
+        padded_description = "<!-- brak opisu na youtube (tylko stopka o donejtach) -->"
 
     description = (
-        f"{date} \n{padded_description}Wpis utworzony automatycznie na podstawie audycji"
-        f' na youtube: <a href="https://www.youtube.com/watch?v={episode.youtube_id}">link</a>\n\n'
-        f"<!--ID###{episode.youtube_id} nr-yt==v0.0.1 {current_time}###-->\n"
+        "<!--Tekst w takich smiesznych nawiasach NIE JEST WIDOCZNY dla sluchaczy-->\n\n"
+        "<!--Oryginalny opis audycji na YT-->\n"
+        f"{padded_description}\n\n"
+        "<!--Data publikacji na YT-->\n"
+        f"Data publikacji na YT: {date}\n"
+        "<!--Link do audycji na YT-->\n"
+        f'YouTube: <a href="https://www.youtube.com/watch?v={episode.youtube_id}">klik</a>\n'
+        "\n\n"
+        "<!--Przed publikacja audycji zaznacz kategorie (np. Luzne Gatki) "
+        "i sprawdz, czy automatycznie wygenerowana miniaturka jest akceptowalna-->\n\n"
+        "<!--Prosze NIE usuwac identyfikatora, jest uzywany przez bota-->\n"
+        f"<!--ID###{episode.youtube_id} nr-yt==v0.0.2 {current_time}###-->\n"
     )
     content = {
         "post_type": "post",
