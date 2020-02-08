@@ -94,7 +94,7 @@ def get_new_videos_and_add_to_database():
 
     for i in ids_to_download:
         if not models.Episode.objects.filter(youtube_id=i).exists():
-            episode = models.Episode(youtube_id=id)
+            episode = models.Episode(youtube_id=i)
             episode.save()
 
 
