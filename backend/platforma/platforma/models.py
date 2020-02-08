@@ -1,7 +1,6 @@
-import datetime
-
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Episode(models.Model):
@@ -26,7 +25,7 @@ class Episode(models.Model):
 
     def should_download(self):
         # returns true if the file is at least X hours old
-        tdelta = datetime.datetime.now() - self.first_seen
+        tdelta = timezone.now() - self.first_seen
         enough_time_elapsed = int(tdelta.total_seconds()) > (
             settings.MIN_VIDEO_AGE_H * 60 * 60
         )
