@@ -81,4 +81,4 @@ CONCURRENT_DOWNLOADS = env.int("CONCURRENT_DOWNLOADS", 1)
 NR_USERNAME = env("NR_USERNAME", default="nr-yt")
 NR_PASSWD = env("NR_PASSWD", default="XXXX")
 DRAFTS_ENABLED = bool(env.int("DRAFTS_ENABLED", default=0))
-MIN_VIDEO_AGE_H = 8
+MIN_VIDEO_AGE_H = env.int("MIN_VIDEO_AGE_H", 8)
