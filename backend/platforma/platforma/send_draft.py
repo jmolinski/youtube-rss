@@ -21,7 +21,8 @@ def send_drafts():
         return
 
     # posortuj tak zeby najstarsze lecialy najpierw
-    eps = models.Episode.objects.filter(draft_posted=False, currently_downloading=False)
+    eps = models.Episode.objects.filter(draft_posted=False)
+    eps = [e for e in eps if e.is_visible()]
     eps_dates = [(e, get_file_data(e.get_filename())["upload_date"]) for e in eps]
     eps = [e[0] for e in sorted(eps_dates, key=lambda x: x[1])]
 
