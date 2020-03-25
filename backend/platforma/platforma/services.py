@@ -51,4 +51,5 @@ def get_file_data(filename):
         "year": yr,
         "month": mnth,
         "day": day,
+        "tags": parsed_info.get("tags", []),
     }

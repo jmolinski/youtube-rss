@@ -133,11 +133,13 @@ def prepare_wordpress_post_content(episode, ep_data, img_data):
         "<!--Link do audycji na YT-->\n"
         f'YouTube: <a href="https://www.youtube.com/watch?v={episode.youtube_id}">klik</a>\n'
         "\n\n"
+        f"<!--Tagi z youtube: {str(ep_data.get('tags', []) or 'BRAK TAGOW')}-->\n"
         "<!--Przed publikacja audycji zaznacz kategorie (np. Luzne Gatki) "
         "i sprawdz, czy automatycznie wygenerowana miniaturka jest akceptowalna-->\n\n"
         "<!--Prosze NIE usuwac identyfikatora, jest uzywany przez bota-->\n"
-        f"<!--ID###{episode.youtube_id} nr-yt==v0.0.2 {current_time}###-->\n"
+        f"<!--ID###{episode.youtube_id} nr-yt==v0.0.3 {current_time}###-->\n"
     )
+
     content = {
         "post_type": "post",
         "post_title": original_title,
