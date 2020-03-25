@@ -46,7 +46,9 @@ def get_cropped_image_bytes(url):
     try:
         image = Image.open(io.BytesIO(r.content))
         w, h = image.size
-        cropped = image.crop((0, 0, min(w, 846), min(h, 256)))
+        w_ratio = w / 846
+        resized = image.resize((int(w // w_ratio), int(h // w_ratio)))
+        cropped = resized.crop((0, 0, 846, 256))  # moze sie wywalic
         return image_to_byte_array(cropped)
     except Exception as e:
         print("Failed to crop thumbnail")
