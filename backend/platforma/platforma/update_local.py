@@ -21,6 +21,7 @@ def download_video_call_ytdl(video_id: str):
             "--audio-quality",
             "96K",
             "--write-info-json",
+            "--verbose",
             "--output",
             r"/app/shared/media/%(id)s.download.temp",
             f"https://www.youtube.com/watch?v={video_id}",
