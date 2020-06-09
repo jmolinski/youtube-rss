@@ -10,7 +10,7 @@ django-extensions==2.2.1
 # Wery useful toolbar for debuging project
 django-debug-toolbar==1.11
 
-youtube-dl==2020.5.8
+youtube-dl==2020.6.6
 
 podgen==1.0.1
 
