@@ -31,6 +31,16 @@ def get_file_data(filename):
     x = parsed_info["upload_date"]
     yr, mnth, day = map(int, [x[:4], x[4:6], x[6:]])
 
+    raw_thumbnail = parsed_info.get("thumbnails", [{"url": "https://example.com"}])[0][
+        "url"
+    ]
+    thumbnail = (
+        raw_thumbnail
+        if ".jpg" not in raw_thumbnail
+        else (raw_thumbnail.split(".jpg")[0] + ".jpg")
+    )
+    thumbnail = thumbnail.replace("hqdefault.jpg", "maxresdefault.jpg")
+
     return {
         "media_url": settings.NR_FEED_DOMAIN + "feeds/media/" + filename,
         "size": os.path.getsize(path_vid),
@@ -42,9 +52,7 @@ def get_file_data(filename):
         "filltitle": parsed_info["fulltitle"],
         "channel_id": parsed_info["channel_id"],
         "description": parsed_info["description"],
-        "thumbnail": parsed_info.get("thumbnails", [{"url": "https://example.com"}])[0][
-            "url"
-        ],
+        "thumbnail": thumbnail,
         "extension": ext,
         "duration": parsed_info["duration"],
         "sortby": (parsed_info["upload_date"], parsed_info["duration"]),
