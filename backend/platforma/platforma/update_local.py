@@ -155,7 +155,8 @@ def update_local():
             [e.youtube_id for e in eps_to_download],
             "] to",
         )
-        eps_to_download = set(random.shuffle(eps_to_download)[:5])
+        random.shuffle(eps_to_download)
+        eps_to_download = set(eps_to_download[:5])
         print(
             "[ ",
             [e.youtube_id for e in eps_to_download],
