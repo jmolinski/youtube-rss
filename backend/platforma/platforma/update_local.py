@@ -2,6 +2,7 @@ import multiprocessing
 import os
 import random
 import subprocess
+import requests
 
 from django.conf import settings
 
@@ -48,6 +49,11 @@ def download_video_call_ytdl(video_id: str):
     return ret
 
 
+def is_video_deleted_by_uploader(youtube_id: str) -> bool:
+    r = requests.get("http://img.youtube.com/vi/{}/mqdefault.jpg".format(youtube_id))
+    return r.status_code != 200
+
+
 def download_video(episode: models.Episode):
     episode.refresh_from_db()
     id = episode.youtube_id
@@ -58,8 +64,15 @@ def download_video(episode: models.Episode):
         print(f"Skipping {id} [the video has already been processed or is too young]")
         return -2
 
+    if is_video_deleted_by_uploader(episode.youtube_id):
+        episode.deleted_by_uploader = True
+        episode.save()
+        print(f"Skipping {id} [the video has been deleted by the uploader]")
+        return -3
+
     episode.currently_downloading = True
     episode.save()
+
     try:
         ret = download_video_call_ytdl(episode.youtube_id)
 
@@ -128,7 +141,10 @@ def update_local():
     eps_to_download = [
         e
         for e in models.Episode.objects.filter(
-            file_downloaded=False, currently_downloading=False, deleted_old=False
+            file_downloaded=False,
+            currently_downloading=False,
+            deleted_old=False,
+            deleted_by_uploader=False,
         )
         if e.should_download()
     ]
@@ -137,11 +153,11 @@ def update_local():
         print(
             "Capping full list to download [",
             [e.youtube_id for e in eps_to_download],
-            "] to [",
-            end=" ",
+            "] to",
         )
         eps_to_download = set(random.shuffle(eps_to_download)[:5])
         print(
+            "[ ",
             [e.youtube_id for e in eps_to_download],
             "] to not get 429 too many requests",
         )
