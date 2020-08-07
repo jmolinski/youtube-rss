@@ -22,7 +22,6 @@ def download_video_call_ytdl(video_id: str):
             "--audio-quality",
             "96K",
             "--write-info-json",
-            "--verbose",
             "--output",
             r"/app/shared/media/%(id)s.download.temp",
             f"https://www.youtube.com/watch?v={video_id}",
@@ -164,9 +163,12 @@ def update_local():
         )
 
     if eps_to_download:
-        pool = multiprocessing.Pool(processes=settings.CONCURRENT_DOWNLOADS)
-        print(pool.map(download_video, list(eps_to_download)))
+        with multiprocessing.Pool(processes=settings.CONCURRENT_DOWNLOADS) as pool:
+            print(pool.map(download_video, list(eps_to_download)))
     else:
         print("Nothing to download")
 
+    print("Finished getting new episodes")
+
     remove_obsolete_files()
+    print("Finished removing obsolete episodes")
