@@ -143,4 +143,4 @@ def remove_episode(request: HttpRequest, episode_id: str) -> HttpResponse:
     """Remove downloaded file, mark episode as to-download"""
 
     removed = services.remove_file_and_mark_as_to_download(episode_id)
-    return HttpResponse("FAILED" if removed else "OK")
+    return HttpResponse("OK" if removed else "FAILED")
