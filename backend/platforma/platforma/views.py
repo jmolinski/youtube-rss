@@ -6,6 +6,8 @@ from email.utils import parsedate_to_datetime
 from django.conf import settings
 from django.http.response import HttpResponse
 
+from django.http.request import HttpRequest
+
 import pytz
 import requests
 
@@ -135,3 +137,10 @@ def get_combined_rss_feed(request):
         add_episode(nr, ep)
 
     return HttpResponse(nr.rss_str(), content_type="text/xml")
+
+
+def remove_episode(request: HttpRequest, episode_id: str) -> HttpResponse:
+    """Remove downloaded file, mark episode as to-download"""
+
+    removed = services.remove_file_and_mark_as_to_download(episode_id)
+    return HttpResponse("FAILED" if removed else "OK")

@@ -2,6 +2,8 @@ import json
 import os
 
 from django.conf import settings
+from platforma.platforma import models
+from django.shortcuts import get_object_or_404
 
 
 def audio_format_to_mime(fmt):
@@ -61,3 +63,28 @@ def get_file_data(filename):
         "day": day,
         "tags": parsed_info.get("tags", []),
     }
+
+
+def remove_file_and_mark_as_to_download(youtube_id: str) -> bool:
+    episode = get_object_or_404(models.Episode, youtube_id=youtube_id)
+
+    if not episode or not episode.file_downloaded:
+        return False
+
+    remove_episode_files(episode)
+    episode.file_downloaded = False
+    episode.draft_posted = False
+    episode.save()
+
+    return True
+
+
+def remove_episode_files(episode: models.Episode) -> None:
+    vid_path = os.path.join("/app/shared/media/", episode.youtube_id + ".mp3")
+    metadata_path = os.path.join(
+        "/app/shared/media/", episode.youtube_id + ".info.json"
+    )
+    print("Removing video:", vid_path, metadata_path)
+
+    os.remove(vid_path)
+    os.remove(metadata_path)

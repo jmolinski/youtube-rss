@@ -1,5 +1,4 @@
 import multiprocessing
-import os
 import random
 import subprocess
 import requests
@@ -7,7 +6,7 @@ import requests
 from django.conf import settings
 
 from platforma.platforma import models
-from platforma.platforma.services import get_file_data
+from platforma.platforma.services import get_file_data, remove_episode_files
 
 
 def download_video_call_ytdl(video_id: str):
@@ -118,18 +117,12 @@ def remove_obsolete_files():
     saved_videos = list(map(get_file_data, saved_filenames))
 
     if len(saved_videos) > settings.REMOVE_THRESHOLD_N:
+        print("Removing an obsolete video")
         saved_videos.sort(key=lambda x: x["sortby"])
         vid = saved_videos[0]  # to_delete
 
-        vid_path = os.path.join(
-            "/app/shared/media/", vid["media_url"].split("media/")[1]
-        )
-        metadata_path = os.path.join("/app/shared/media/", vid["id"] + ".info.json")
-        print("Removing obsolete video:", vid_path, metadata_path)
-
-        os.remove(vid_path)
-        os.remove(metadata_path)
         episode = models.Episode.objects.get(youtube_id=vid["id"])
+        remove_episode_files(episode)
         episode.deleted_old = True
         episode.save()
 
