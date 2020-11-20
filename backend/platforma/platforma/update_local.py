@@ -106,6 +106,7 @@ def get_new_videos_and_add_to_database():
 
     for i in ids_to_download:
         if not models.Episode.objects.filter(youtube_id=i).exists():
+            print(f"Adding video to db: {i}")
             episode = models.Episode(youtube_id=i)
             episode.save()
 
@@ -156,14 +157,14 @@ def update_local():
         )
 
     if eps_to_download:
-        #with multiprocessing.Pool(processes=settings.CONCURRENT_DOWNLOADS) as pool:
+        # with multiprocessing.Pool(processes=settings.CONCURRENT_DOWNLOADS) as pool:
         #    print(pool.map(download_video, list(eps_to_download)))
         ep = random.choice(eps_to_download)
         try:
             res = download_video(ep)
-            print(f'[{res}]')
+            print(f"[{res}]")
         except Exception as e:
-            print(f'Problem getting video {ep}, {e}')
+            print(f"Problem getting video {ep}, {e}")
     else:
         print("Nothing to download")
 
