@@ -96,7 +96,7 @@ def get_new_videos_and_add_to_database():
             "1-" + str(settings.KEEP_LAST_N),
             "--skip-download",
             "--flat-playlist",
-            r"https://www.youtube.com/c/NocneRadio/videos/",
+            r"https://www.youtube.com/c/NocneRadio/videos",
         ],
         capture_output=True,
     )
