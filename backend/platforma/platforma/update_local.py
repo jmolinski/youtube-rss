@@ -156,8 +156,14 @@ def update_local():
         )
 
     if eps_to_download:
-        with multiprocessing.Pool(processes=settings.CONCURRENT_DOWNLOADS) as pool:
-            print(pool.map(download_video, list(eps_to_download)))
+        #with multiprocessing.Pool(processes=settings.CONCURRENT_DOWNLOADS) as pool:
+        #    print(pool.map(download_video, list(eps_to_download)))
+        ep = random.choice(eps_to_download)
+        try:
+            res = download_video(ep)
+            print(f'[{res}]')
+        except Exception as e:
+            print(f'Problem getting video {ep}, {e}')
     else:
         print("Nothing to download")
 
