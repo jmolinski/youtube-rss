@@ -9,7 +9,8 @@ services:
       - .envs/.local/.postgres
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
-  app:  &app
+    restart: unless-stopped
+  app:
     container_name: youtube-rss-app
     build:
       context: .
